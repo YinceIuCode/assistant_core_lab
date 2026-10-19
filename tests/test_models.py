@@ -1,6 +1,8 @@
 import pytest
 from pydantic import ValidationError
-from assistant_core.models import Message, Intent, Response
+
+from assistant_core.models import Intent, Message, Response
+
 
 def test_message_valid():
     msg = Message(text="where is the library?")

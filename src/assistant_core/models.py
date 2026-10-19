@@ -1,5 +1,7 @@
 from enum import Enum
+
 from pydantic import BaseModel, Field
+
 
 class Intent(str, Enum):
     GREETING = "greeting"

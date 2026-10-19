@@ -5,6 +5,7 @@ from pathlib import Path
 
 from assistant_core.errors import DataError
 
+
 @dataclass(frozen=True)
 class Office:
     name: str

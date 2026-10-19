@@ -1,7 +1,10 @@
-import pytest
 from pathlib import Path
-from assistant_core.knowledge import OfficeDirectory, Handbook
+
+import pytest
+
 from assistant_core.errors import DataError
+from assistant_core.knowledge import Handbook, OfficeDirectory
+
 
 def test_office_directory_success(tmp_path):
 
