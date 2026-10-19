@@ -1,10 +1,9 @@
 import os
 from pathlib import Path
 
+from assistant_core.errors import ConfigError
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-
-from assistant_core.errors import ConfigError
 
 
 class Settings(BaseModel):
@@ -21,13 +20,13 @@ def load_settings(env_file: str | None = ".env") -> Settings:
         load_dotenv(env_file, override=False)
     
     s = Settings(
-    data_dir=Path(os.getenv("ASSISTANT_DATA_DIR", "data")),
-    llm_provider=os.getenv("LLM_PROVIDER", "stub"),
-    llm_api_key=os.getenv("LLM_API_KEY") or None,
-    credit_rate_vnd=int(os.getenv("CREDIT_RATE_VND", "450000")),
-    retake_multiplier=float(os.getenv("RETAKE_MULTIPLIER", "1.5")),
-    max_credits=int(os.getenv("MAX_CREDITS", "30")),
-    log_level=os.getenv("LOG_LEVEL", "INFO"),
+        data_dir=Path(os.getenv("ASSISTANT_DATA_DIR", "data")),
+        llm_provider=os.getenv("LLM_PROVIDER", "stub"),
+        llm_api_key=os.getenv("LLM_API_KEY") or None,
+        credit_rate_vnd=int(os.getenv("CREDIT_RATE_VND", "450000")),
+        retake_multiplier=float(os.getenv("RETAKE_MULTIPLIER", "1.5")),
+        max_credits=int(os.getenv("MAX_CREDITS", "30")),
+        log_level=os.getenv("LOG_LEVEL", "INFO"),
     )
     
     if s.llm_provider != "stub" and not s.llm_api_key:
