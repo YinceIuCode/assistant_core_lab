@@ -1,21 +1,20 @@
 # tests/test_router.py
 import pytest
-from assistant_core_lab.src.assistant_core.router import route
-
-def test_route_empty():
-    assert route("") == "empty"
+from assistant_core.models import Intent
+from assistant_core.router import route
 
 def test_route_greeting():
-    response = route("hi")
-    assert "Hello" in response
+    offices = {"library", "registrar"}
+    assert route("Hello", offices) == Intent.GREETING
 
-def test_route_tuition():
-    response = route("tuition for 10 credits")
-    assert "Your tuition is" in response
+def test_route_fee():
+    offices = {"library", "registrar"}
+    assert route("tuition for 18 credits", offices) == Intent.FEE
 
-def test_route_history():
-    route("hi")
-    route("hello")
-    history_resp = route("history")
-    assert "hi" in history_resp
-    assert "hello" in history_resp
+def test_route_office():
+    offices = {"library", "registrar"}
+    assert route("where is the library", offices) == Intent.OFFICE
+
+def test_route_rule():
+    offices = {"library", "registrar"}
+    assert route("can I register my thesis", offices) == Intent.RULE
