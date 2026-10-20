@@ -1,6 +1,6 @@
 # tests/test_router.py
 import pytest
-from router import route
+from assistant_core_lab.src.assistant_core.router import route
 
 def test_route_empty():
     assert route("") == "empty"
