@@ -43,7 +43,7 @@ jobs:
 
       - name: Test Modules
         run: |
-          MODULES=("knowledge" "models" "tools" "errors")
+          MODULES=("knowledge" "models" "tools" "errors" "config" "router" "responder" "sevice" "logging_setup")
           is_fail=0
           for module in "${MODULES[@]}"; do
             if pytest -q "./tests/test_${module}.py" > /dev/null 2>&1; then
