@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 
 from assistant_core.errors import ConfigError
 from dotenv import load_dotenv
@@ -21,9 +20,9 @@ def load_settings(env_file: str | None = ".env") -> Settings:
     s = Settings(
         API_KEY = os.getenv("API_KEY"),
         MODEL = os.getenv("MODEL"),
-        RATE = int(os.getenv("RATE")) if os.getenv("RATE") != None else None,
-        RETAKE_RATE = float(os.getenv("RETAKE_RATE")) if os.getenv("RETAKE_RATE") != None else None,
-        DEBUG = None if os.getenv("DEBUG") == None else (False if os.getenv("DEBUG").lower() != "true" else True),
+        RATE = int(os.getenv("RATE")) if os.getenv("RATE") is not None else None,
+        RETAKE_RATE = float(os.getenv("RETAKE_RATE")) if os.getenv("RETAKE_RATE") is not None else None,
+        DEBUG = None if os.getenv("DEBUG") is None else (False if os.getenv("DEBUG").lower() != "true" else True),
     )
     
     if s.MODEL != "stub" and not s.API_KEY:
