@@ -1,6 +1,8 @@
 import json
 import logging
+
 from assistant_core.logging_setup import JsonFormatter
+
 
 def test_json_formatter_basic():
     formatter = JsonFormatter()
