@@ -13,10 +13,16 @@ class StubLLMResponder:
 def test_service_fallback_on_provider_error():
     settings = MagicMock()
     offices = MagicMock()
+    offices.names = set()  # Tránh lỗi vòng lặp ở router
+    
     handbook = MagicMock()
+    # Tạo một rule giả có chứa chuỗi thật để vượt qua ải Pydantic
+    mock_rule = MagicMock()
+    mock_rule.id = "rule_1"
+    mock_rule.title = "Dummy Rule"
+    handbook.search.return_value = mock_rule
 
     service = AssistantService(settings, offices, handbook)
-    
     service.responder = StubLLMResponder()
 
     msg = Message(text="test query")
