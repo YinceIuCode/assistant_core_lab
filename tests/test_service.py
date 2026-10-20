@@ -6,7 +6,7 @@ from assistant_core.service import AssistantService
 
 
 class StubLLMResponder:
-    def generate(self, message: Message):
+    def explain(self, question: str, rule: object) -> str:
         raise ProviderError("LLM responder failed")
 
 
