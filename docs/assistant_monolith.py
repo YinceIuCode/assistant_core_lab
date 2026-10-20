@@ -1,7 +1,12 @@
 # assistant_monolith.py — "it works on my machine"
 # Lab 3 starting point: a working but unmaintainable study-assistant script.
 # DO NOT copy this style. Your job is to refactor it.
-import csv, json, sys, time, random, os
+import csv
+import json
+import os
+import random
+import sys
+import time
 
 API_KEY = "sk-test-2b7c1d9e4f0a"        # TODO move somewhere?
 MODEL = "gpt-small"
