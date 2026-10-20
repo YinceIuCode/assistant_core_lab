@@ -1,16 +1,14 @@
 import logging
 
-from assistant_core.responder import Responder, StubLLMResponder, TemplateResponder
-from assistant_core.router import route
-
 from assistant_core.config import Settings
 from assistant_core.errors import ProviderError
 from assistant_core.knowledge import Handbook, OfficeDirectory
 from assistant_core.models import Intent, Message, Response, Source
+from assistant_core.responder import Responder, StubLLMResponder, TemplateResponder
+from assistant_core.router import route
 from assistant_core.tools import parse_credits, tuition
 
 log = logging.getLogger("assistant_core")
-
 
 class AssistantService:
     def __init__(
@@ -42,7 +40,7 @@ class AssistantService:
             o = self.offices.find(msg.text)
             if o:
                 return Response(
-                    answer=f"{o.name}: room {o.room}, open {o.hours}.",
+                    answer=f"{o.name.title()}: room {o.room}, open {o.hours}.",
                     intent=intent,
                 )
 
@@ -51,29 +49,31 @@ class AssistantService:
     def _fee(self, text: str) -> Response:
         credits, retake = parse_credits(text)
         cost = tuition(
-            credits,
-            retake,
-            self.settings.credit_rate_vnd,
-            self.settings.retake_multiplier,
-            self.settings.max_credits,
+            credits=credits,
+            retake=retake,
+            rate=self.settings.RATE,
+            retake_multiplier=self.settings.RETAKE_RATE,
+            max_credits=25
         )
         return Response(
-            answer=f"Your tuition is {cost:,} VND.",
+            answer=f"Tuition fee: {cost:,} VND.",
             intent=Intent.FEE,
         )
 
     def _rule(self, text: str) -> Response:
         rule = self.handbook.search(text)
-        if rule is None:
+        if not rule:
             return Response(
-                answer="Sorry, I don't know that yet.",
+                answer="I don't know.",
                 intent=Intent.UNKNOWN,
             )
-
+        
         sources = [Source(id=rule.id, title=rule.title)]
+        
         try:
+            answer = self.responder.explain(text, rule)
             return Response(
-                answer=self.responder.explain(text, rule),
+                answer=answer,
                 intent=Intent.RULE,
                 sources=sources,
             )

@@ -1,14 +1,14 @@
+import logging
 import sys
 import time
+from pathlib import Path
 
 from assistant_core.config import load_settings
 from assistant_core.errors import AssistantError
 from assistant_core.knowledge import Handbook, OfficeDirectory
-from assistant_core.logging_setup import setup_logging
+from assistant_core.logging_setup import JsonFormatter
 from assistant_core.models import Message
 from assistant_core.service import AssistantService
-
-logger = setup_logging()
 
 
 def main():
@@ -16,12 +16,21 @@ def main():
         print("Usage: python -m assistant_core '<message>'")
         sys.exit(1)
 
-    text = " ".join(sys.argv[1:])
+    # Khởi tạo Logging chuẩn JSON
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setFormatter(JsonFormatter())
+    logger = logging.getLogger("assistant_core")
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
 
+    text = " ".join(sys.argv[1:])
+    
     try:
         settings = load_settings()
-        offices = OfficeDirectory.from_csv(settings.data_dir / "offices.csv")
-        handbook = Handbook.from_json(settings.data_dir / "handbook.json")
+        
+        data_dir = Path("data")
+        offices = OfficeDirectory.from_csv(data_dir / "offices.csv")
+        handbook = Handbook.from_json(data_dir / "handbook.json")
 
         service = AssistantService(settings, offices, handbook)
 
@@ -41,11 +50,10 @@ def main():
         )
 
         print(response.answer)
-
-    except AssistantError as err:
-        logger.error(f"Error executing assistant: {err}")
+        
+    except AssistantError as e:
+        logger.error(str(e))
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()
