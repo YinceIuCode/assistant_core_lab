@@ -51,9 +51,9 @@ class AssistantService:
         cost = tuition(
             credits=credits,
             retake=retake,
-            rate=self.settings.RATE,
-            retake_multiplier=self.settings.RETAKE_RATE,
-            max_credits=25
+            rate=self.settings.credit_rate_vnd,
+            retake_multiplier=self.settings.retake_multiplier,
+            max_credits=self.settings.max_credits
         )
         return Response(
             answer=f"Tuition fee: {cost:,} VND.",

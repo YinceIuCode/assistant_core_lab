@@ -1,7 +1,6 @@
 import logging
 import sys
 import time
-from pathlib import Path
 
 from assistant_core.config import load_settings
 from assistant_core.errors import AssistantError
@@ -10,30 +9,28 @@ from assistant_core.logging_setup import JsonFormatter
 from assistant_core.models import Message
 from assistant_core.service import AssistantService
 
-
 def main():
     if len(sys.argv) < 2:
         print("Usage: python -m assistant_core '<message>'")
         sys.exit(1)
 
-    # Khởi tạo Logging chuẩn JSON
-    handler = logging.StreamHandler(sys.stderr)
-    handler.setFormatter(JsonFormatter())
-    logger = logging.getLogger("assistant_core")
-    logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
-
-    text = " ".join(sys.argv[1:])
-    
     try:
         settings = load_settings()
+
+        handler = logging.StreamHandler(sys.stderr)
+        handler.setFormatter(JsonFormatter())
+        logger = logging.getLogger("assistant_core")
+        logger.addHandler(handler)
         
-        data_dir = Path("data")
-        offices = OfficeDirectory.from_csv(data_dir / "offices.csv")
-        handbook = Handbook.from_json(data_dir / "handbook.json")
+        level = getattr(logging, settings.log_level.upper(), logging.INFO)
+        logger.setLevel(level)
+
+        offices = OfficeDirectory.from_csv(settings.data_dir / "offices.csv")
+        handbook = Handbook.from_json(settings.data_dir / "handbook.json")
 
         service = AssistantService(settings, offices, handbook)
 
+        text = " ".join(sys.argv[1:])
         start_time = time.perf_counter()
         msg = Message(text=text)
         response = service.handle(msg)
@@ -52,6 +49,9 @@ def main():
         print(response.answer)
         
     except AssistantError as e:
+        logger = logging.getLogger("assistant_core")
+        if not logger.handlers:
+            logging.basicConfig(level=logging.ERROR)
         logger.error(str(e))
         sys.exit(1)
 
