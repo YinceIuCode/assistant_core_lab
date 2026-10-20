@@ -1,7 +1,8 @@
+from assistant_core.responder import StubLLMResponder
+
 from assistant_core.config import Settings
 from assistant_core.knowledge import Handbook, OfficeDirectory, Rule
 from assistant_core.models import Message
-from assistant_core.responder import StubLLMResponder
 from assistant_core.service import AssistantService
 
 
