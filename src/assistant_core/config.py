@@ -31,7 +31,7 @@ def load_settings(env_file: str | None = ".env") -> Settings:
         MODEL = os.getenv("MODEL"),
         RATE = int(os.getenv("RATE")) if os.getenv("RATE") != None else None,
         RETAKE_RATE = float(os.getenv("RETAKE_RATE")) if os.getenv("RETAKE_RATE") != None else None,
-        DEBUG = bool(os.getenv("DEBUG")),
+        DEBUG = None if os.getenv("DEBUG") == None else (False if os.getenv("DEBUG").lower() != "true" else True),
     )
     
     if s.MODEL != "stub" and not s.API_KEY:
