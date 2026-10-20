@@ -1,6 +1,8 @@
 import pytest
-from assistant_core.responder import TemplateResponder, StubLLMResponder
+
 from assistant_core.errors import ProviderError
+from assistant_core.responder import StubLLMResponder, TemplateResponder
+
 
 class DummyRule:
     def __init__(self, title: str, text: str):

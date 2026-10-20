@@ -1,5 +1,7 @@
 from typing import Protocol
+
 from assistant_core.errors import ProviderError
+
 
 class Responder(Protocol):
     def explain(self, question: str, rule: object) -> str:

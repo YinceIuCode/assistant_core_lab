@@ -1,7 +1,7 @@
 # tests/test_router.py
-import pytest
 from assistant_core.models import Intent
 from assistant_core.router import route
+
 
 def test_route_greeting():
     offices = {"library", "registrar"}

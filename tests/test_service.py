@@ -1,8 +1,7 @@
 from unittest.mock import MagicMock
-import pytest
 
 from assistant_core.errors import ProviderError
-from assistant_core.models import Message, Intent
+from assistant_core.models import Message
 from assistant_core.service import AssistantService
 
 
