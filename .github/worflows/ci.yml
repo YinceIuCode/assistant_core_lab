@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  linting:
+    name: Linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+
+      - name: Install Packages
+        run: pip install ruff
+
+      - name: Lint Files
+        run: ruff check ./src
+
+
+  testing:
+    name: Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+
+      - name: Install Packages
+        run: pip install pytest
+
+      - name: Test Modules
+        run: |
+          declare -A MODULES=(
+            ["knowledge"]="1"
+            ["models"]="2"
+            ["tools"]="3"
+            ["errors"]="4"
+          )
+          is_fail=0
+          for module in "${!MODULES[@]}"; do
+            if pytest -q ./tests/test_"".py > /dev/null 2>&1; then
+              printf "%-15s PASSED\n" "$module:"
+            else
+              printf "%-15s FAILED\n" "$module:"
+              is_fail=1
+            fi
+          done
+          if [ $is_fail -eq 1 ]; then
+            exit 1
+          fi
