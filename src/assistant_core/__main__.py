@@ -9,6 +9,7 @@ from assistant_core.logging_setup import JsonFormatter
 from assistant_core.models import Message
 from assistant_core.service import AssistantService
 
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python -m assistant_core '<message>'")
