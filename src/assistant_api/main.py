@@ -7,17 +7,14 @@ Endpoints (v1): GET /health, POST /v1/chat, POST /v1/feedback, GET /v1/feedback 
 
 from __future__ import annotations
 
-import uuid
-from datetime import datetime, timezone
-
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from assistant_api.ratelimit import RateLimiter
 from assistant_api.schemas import ChatRequest, ChatResponse, ErrorResponse, FeedbackIn, FeedbackOut, Weather
-from assistant_api.weather import ExternalServiceError, WeatherClient
-from assistant_core import AssistantService, Message, build_service
+from assistant_api.weather import WeatherClient
+from assistant_core import AssistantService, build_service
 from assistant_core.config import Settings, load_settings
 
 
@@ -80,8 +77,8 @@ def create_app(
 
     @app.get("/v1/feedback", response_model=list[FeedbackOut], tags=["feedback"], dependencies=[Depends(require_admin)])
     def list_feedback() -> list[FeedbackOut]:
-        # TODO T3 (1 line): return the list. The API-key check is already done by `require_admin` above.
-        raise NotImplementedError("T3")
+        """Retrieve all recorded feedback (Admin only)."""
+        return feedback_store
 
     @app.get("/v1/weather", response_model=Weather, tags=["external"], responses={503: {"model": ErrorResponse}})
     def campus_weather() -> Weather:
