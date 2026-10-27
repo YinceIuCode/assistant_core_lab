@@ -86,3 +86,17 @@ class AssistantService:
                 sources=sources,
                 degraded=True,
             )
+
+def make_responder(provider: str) -> Responder:
+    """Pick the responder for LLM_PROVIDER. Real providers arrive in later labs."""
+    if provider == "template":
+        return TemplateResponder()
+    return StubLLMResponder()
+
+
+def build_service(settings: Settings) -> AssistantService:
+    """Build an AssistantService from settings."""
+    d = settings.data_dir
+    offices = OfficeDirectory.from_csv(d / "offices.csv")
+    handbook = Handbook.from_json(d / "handbook.json")
+    return AssistantService(settings, offices, handbook, make_responder(settings.llm_provider))
