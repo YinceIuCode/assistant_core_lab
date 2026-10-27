@@ -25,7 +25,7 @@ jobs:
         run: ruff check .
 
   src-testing:
-    name: Testing
+    name: Source Testing
     runs-on: ubuntu-latest
 
     steps:
@@ -57,8 +57,8 @@ jobs:
             exit 1
           fi
 
-  src-testing:
-    name: Testing
+  api-testing:
+    name: Rest API Testing
     runs-on: ubuntu-latest
 
     steps:
@@ -76,7 +76,7 @@ jobs:
 
       - name: Test Modules
         run: |
-          MODULES=("knowledge" "models" "tools" "errors" "config" "router" "responder" "service" "logging_setup")
+          MODULES=("health" "chat" "rate_limit" "feedback" "weather")
           is_fail=0
           for module in "${MODULES[@]}"; do
             if pytest -q "./tests/test_${module}.py" > /dev/null 2>&1; then
