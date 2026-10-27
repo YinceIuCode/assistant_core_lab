@@ -7,7 +7,7 @@ on:
 
 jobs:
   linting:
-    name: Linting
+    name: Source Linting
     runs-on: ubuntu-latest
 
     steps:
