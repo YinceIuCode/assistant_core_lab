@@ -15,7 +15,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from assistant_api.ratelimit import RateLimiter
-from assistant_api.schemas import ChatRequest, ChatResponse, ErrorResponse, FeedbackIn, FeedbackOut, OfficeOut
+from assistant_api.schemas import ChatRequest, ChatResponse, ErrorResponse, FeedbackIn, FeedbackOut, Weather, OfficeOut
 from assistant_api.weather import ExternalServiceError, WeatherClient
 from assistant_core import AssistantService, Message, build_service
 from assistant_core.config import Settings, load_settings
