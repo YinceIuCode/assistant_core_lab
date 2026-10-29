@@ -7,7 +7,7 @@ on:
 
 jobs:
   linting:
-    name: Linting
+    name: Source Linting
     runs-on: ubuntu-latest
 
     steps:
@@ -22,10 +22,10 @@ jobs:
         run: pip install ruff
 
       - name: Lint Files
-        run: ruff check ./src
+        run: ruff check .
 
-  testing:
-    name: Testing
+  src-testing:
+    name: Source Testing
     runs-on: ubuntu-latest
 
     steps:
@@ -47,6 +47,39 @@ jobs:
           is_fail=0
           for module in "${MODULES[@]}"; do
             if pytest -q "./tests/test_${module}.py" > /dev/null 2>&1; then
+              printf "%-15s PASSED\n" "$module:"
+            else
+              printf "%-15s FAILED\n" "$module:"
+              is_fail=1
+            fi
+          done
+          if [ $is_fail -eq 1 ]; then
+            exit 1
+          fi
+
+  api-testing:
+    name: Rest API Testing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+
+      - name: Install Packages
+        run: |
+          pip install pytest
+          pip install -e .
+
+      - name: Test Modules
+        run: |
+          MODULES=("health" "chat" "rate_limit" "feedback" "weather")
+          is_fail=0
+          for module in "${MODULES[@]}"; do
+            if pytest -q "./tests/test_api.py" -k "$module" > /dev/null 2>&1; then
               printf "%-15s PASSED\n" "$module:"
             else
               printf "%-15s FAILED\n" "$module:"
