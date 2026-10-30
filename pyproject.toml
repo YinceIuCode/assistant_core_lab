@@ -16,6 +16,10 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+filterwarnings = [
+    "ignore::DeprecationWarning:starlette.*",
+    "ignore::DeprecationWarning:fastapi.*",
+]
 
 [tool.ruff]
 line-length = 120
