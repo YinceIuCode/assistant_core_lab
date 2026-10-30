@@ -7,7 +7,7 @@ on:
 
 jobs:
   linting:
-    name: Linting
+    name: Source Linting
     runs-on: ubuntu-latest
 
     steps:
@@ -24,8 +24,8 @@ jobs:
       - name: Lint Files
         run: ruff check ./src
 
-  testing:
-    name: Testing
+  src-testing:
+    name: Source Testing
     runs-on: ubuntu-latest
 
     steps:
@@ -43,30 +43,49 @@ jobs:
 
       - name: Test Modules
         run: |
+          MODULES=("knowledge" "models" "tools" "errors" "config" "router" "responder" "service" "logging_setup")
           is_fail=0
-
-          echo "=== Testing Core Modules ==="
-          CORE_MODULES=("knowledge" "models" "tools" "errors" "config" "router" "responder" "service" "logging_setup")
-          for module in "${CORE_MODULES[@]}"; do
+          for module in "${MODULES[@]}"; do
             if pytest -q "./tests/test_${module}.py" > /dev/null 2>&1; then
-              printf "%-22s PASSED\n" "$module:"
+              printf "%-15s PASSED\n" "$module:"
             else
-              printf "%-22s FAILED\n" "$module:"
+              printf "%-15s FAILED\n" "$module:"
               is_fail=1
             fi
           done
+          if [ $is_fail -eq 1 ]; then
+            exit 1
+          fi
 
-          echo -e "\n=== Testing API Modules ==="
-          API_MODULES=("health" "chat" "rate_limit" "feedback" "weather" "offices")
-          for module in "${API_MODULES[@]}"; do
+  api-testing:
+    name: Rest API Testing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+
+      - name: Install Packages
+        run: |
+          pip install pytest
+          pip install -e .
+
+      - name: Test Modules
+        run: |
+          MODULES=("health" "chat" "rate_limit" "feedback" "weather" "offices")
+          is_fail=0
+          for module in "${MODULES[@]}"; do
             if pytest -q "./tests/test_api.py" -k "$module" > /dev/null 2>&1; then
-              printf "%-22s PASSED\n" "api [$module]:"
+              printf "%-15s PASSED\n" "$module:"
             else
-              printf "%-22s FAILED\n" "api [$module]:"
+              printf "%-15s FAILED\n" "$module:"
               is_fail=1
             fi
           done
-
           if [ $is_fail -eq 1 ]; then
             exit 1
           fi
