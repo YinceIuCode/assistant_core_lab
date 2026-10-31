@@ -1,0 +1,9 @@
+Calling `service.handle()` in Lab 3 was a local, in-process Python function execution restricted to the same runtime environment and is not exposed to any other platforms except the program itself. 
+
+In contrast, `POST /v1/chat` in Lab 4 exposes the service over HTTP using standardized JSON data contracts, enable the service itself to be exposed, seen and interact by other platforms. 
+
+This HTTP API architecture decouples and simplifies backend business logic from client implementations, allowing platforms like mobile apps, curl to communicate with the service. 
+
+Teams prefer this approach because it enables independent development and deployment of frontend and backend applications. 
+
+Additionally, it provides automatic request validation and standardized HTTP status codes for robust error handling across distributed systems.
