@@ -12,6 +12,7 @@ class Office:
     room: str
     hours: str
 
+
 class OfficeDirectory:
     def __init__(self, offices: dict[str, Office]):
         self._offices = offices
@@ -33,11 +34,17 @@ class OfficeDirectory:
         t = text.lower()
         return next((o for name, o in self._offices.items() if name in t), None)
 
+    def all(self) -> list[Office]:
+        """Return every office, sorted by name (used by GET /v1/offices)."""
+        return sorted(self._offices.values(), key=lambda o: o.name.lower())
+
+
 @dataclass(frozen=True)
 class Rule:
     id: str
     title: str
     text: str
+
 
 class Handbook:
     def __init__(self, rules: list[Rule]):

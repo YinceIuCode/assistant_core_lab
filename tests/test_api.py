@@ -86,14 +86,12 @@ def test_weather_stale_cache_when_upstream_fails():
 
 def test_offices_ok(client):
     r = client.get("/v1/offices")
-    assert r.statuscode == 200
-    
-    sorted_json = r.json() # I assume this return a list contains json objects whatever
-    sorted_json.sort(lambda k : k["name"])
-    
-    assert r.json() == sorted_json
-    
+    assert r.status_code == 200
+    names = [o["name"] for o in r.json()]
+    assert names == sorted(names, key=str.lower)  # sorted by name
+
+
 def test_offices_contains_library(client):
     r = client.get("/v1/offices")
-    o_lib = next(o for o in r.json() if o["name"] == "Library")
-    assert o_lib == {"name" : "Library", "room" : "B.201", "hours" : "Mon-Sat 07:00-20:00"}
+    library = next(o for o in r.json() if o["name"] == "Library")
+    assert library == {"name": "Library", "room": "B.201", "hours": "Mon-Sat 07:00-20:00"}
