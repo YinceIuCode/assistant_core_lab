@@ -53,4 +53,4 @@ class ErrorResponse(BaseModel):
 class OfficeOut(BaseModel):
     name : str
     room : str
-    hour : str
+    hours : str
