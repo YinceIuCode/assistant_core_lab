@@ -83,9 +83,6 @@ def test_weather_stale_cache_when_upstream_fails():
     assert w.current().stale
 
 
-# --- Homework H1: GET /v1/offices ---
-
-
 def test_offices_ok(client):
     r = client.get("/v1/offices")
     assert r.status_code == 200
