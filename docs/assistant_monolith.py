@@ -94,7 +94,7 @@ def handle(msg):
         if score > best_score:
             best_score = score
             best = rule
-    if best != None and best_score >= 1:
+    if best is not None and best_score >= 1:
         try:
             ans = llm("Answer using this rule: " + best["text"] + " Question: " + msg)
             return ans + " (source: " + best["id"] + ")"
