@@ -1,12 +1,46 @@
+# Python virtual environments
 .venv/
-scripts/
+venv/
+env/
 
-# Build artifacts
-*.egg-info/
-
+# Python bytecode & cache
 __pycache__/
+*.py[cod]
+*$py.class
+
+# Testing & Linting caches
 .pytest_cache/
 .ruff_cache/
-.DS_Store
+.coverage
+htmlcov/
 
+# Build artifacts & package distribution
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Secrets & Local environment files (never commit real credentials)
 .env
+.env.local
+.env.*.local
+
+# Databases (Lab 5 SQLite database files and lock/journal files)
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+assistant.db
+school.db
+
+# IDE & Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS temporary files
+.DS_Store
+Thumbs.db
