@@ -22,7 +22,7 @@ class Settings(BaseModel):
     campus_lon: float = 106.6822
     rate_limit_per_min: int = 30
     database_url: str = "sqlite:///assistant.db"
-    session_salt: str = "dev-salt"
+    session_salt: str = Field(default="dev-salt", repr=False)
 
 
 def load_settings(env_file: str | None = ".env") -> Settings:
