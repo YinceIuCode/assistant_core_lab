@@ -89,6 +89,7 @@ jobs:
           if [ $is_fail -eq 1 ]; then
             exit 1
           fi
+          
   db-testing:
     name: Database Testing
     runs-on: ubuntu-latest
