@@ -2,7 +2,7 @@ import hashlib
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import case, func, event
+from sqlalchemy import case, event, func
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Field, Relationship, Session, SQLModel, create_engine, select
 
