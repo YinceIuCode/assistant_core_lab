@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from hello_api import app
+from assistant_core_lab.practice.Hoang13707.lab04.hello_api import app
 
 client = TestClient(app)
 
