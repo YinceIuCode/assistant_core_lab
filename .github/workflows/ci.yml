@@ -89,3 +89,32 @@ jobs:
           if [ $is_fail -eq 1 ]; then
             exit 1
           fi
+          
+  db-testing:
+    name: Database Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install Packages
+        run: |
+          pip install pytest
+          pip install -e .
+      - name: Test Database
+        run: |
+          MODULES=("session_id_is_hashed" "one_session_many_interactions" "feedback_requires_existing_interaction")
+          is_fail=0
+          for module in "${MODULES[@]}"; do
+            if pytest -q "./tests/test_db.py" -k "$module" > /dev/null 2>&1; then
+              printf "%-40s PASSED\n" "$module:"
+            else
+              printf "%-40s FAILED\n" "$module:"
+              is_fail=1
+            fi
+          done
+          if [ $is_fail -eq 1 ]; then
+            exit 1
+          fi
