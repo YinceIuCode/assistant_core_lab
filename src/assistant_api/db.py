@@ -2,7 +2,7 @@ import hashlib
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import case, func
+from sqlalchemy import case, func, event
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Field, Relationship, Session, SQLModel, create_engine, select
 
@@ -42,11 +42,21 @@ class Feedback(SQLModel, table=True):
     interaction: Optional["Interaction"] = Relationship(back_populates="feedback")
 
 
-def make_engine(url: str):
-    if url in ("sqlite://", "sqlite:///:memory:"):
-        return create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
-    connect_args = {"check_same_thread": False} if url.startswith("sqlite") else {}
-    return create_engine(url, connect_args=connect_args)
+def make_engine(db_url: str):
+    connect_args = {"check_same_thread": False} if db_url.startswith("sqlite") else {}
+    if db_url in ("sqlite://", "sqlite:///:memory:"):
+        engine = create_engine(db_url, connect_args=connect_args, poolclass=StaticPool)
+    else:
+        engine = create_engine(db_url, connect_args=connect_args)
+
+    if db_url.startswith("sqlite"):
+        @event.listens_for(engine, "connect")
+        def set_sqlite_pragma(dbapi_connection, connection_record):
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.close()
+
+    return engine
 
 
 def init_db(engine) -> None:
@@ -58,18 +68,25 @@ def hash_session(raw: str, salt: str) -> str:
 
 
 class Repository:
-    def __init__(self, engine, salt: str):
-        self.engine, self.salt = engine, salt
+    def __init__(self, db_url_or_engine, salt: str = ""):
+        if isinstance(db_url_or_engine, str):
+            self.engine = make_engine(db_url_or_engine)
+        else:
+            self.engine = db_url_or_engine
+        self.salt = salt
+
+    def init_db(self) -> None:
+        init_db(self.engine)
 
     def record_interaction(
         self,
         raw_session: str,
         request_id: str,
         intent: str,
-        topic: str | None,
-        resolved: bool,
-        degraded: bool,
-        latency_ms: float,
+        topic: str | None = None,
+        resolved: bool = True,
+        degraded: bool = False,
+        latency_ms: float = 0.0,
     ) -> None:
         sid = hash_session(raw_session, self.salt)
         with Session(self.engine) as db:
@@ -88,34 +105,47 @@ class Repository:
             )
             db.commit()
 
-    def add_feedback(self, request_id: str, rating: int, comment: str | None) -> Feedback | None:
+    def add_feedback(self, request_id: str, rating: int, comment: str | None = None) -> Feedback | None:
         with Session(self.engine) as db:
             exists = db.exec(select(Interaction).where(Interaction.request_id == request_id)).first()
             if exists is None:
                 return None
-            # TODO R1 (4 lines) — follow record_interaction above:
-            #   fb = Feedback(request_id=request_id, rating=rating, comment=comment)
-            #   db.add(fb); db.commit(); db.refresh(fb)   # refresh loads the new id from the database
-            #   return fb
-            raise NotImplementedError("R1")
+            fb = Feedback(request_id=request_id, rating=rating, comment=comment)
+            db.add(fb)
+            db.commit()
+            db.refresh(fb)
+            return fb
 
     def list_feedback(self, limit: int = 100) -> list[Feedback]:
-        with Session(self.engine) as db: # noqa: F841
-            # TODO R2 (1 line): newest first, at most `limit` rows. SQL would be:
-            #   SELECT * FROM feedback ORDER BY created_at DESC LIMIT ?
-            # In SQLModel: select(Feedback).order_by(Feedback.created_at.desc()).limit(limit)
-            raise NotImplementedError("R2")
+        with Session(self.engine) as db:
+            statement = select(Feedback).order_by(Feedback.created_at.desc()).limit(limit)
+            return list(db.exec(statement).all())
 
     def intent_stats(self) -> list[dict]:
         with Session(self.engine) as db:
-            unresolved = func.sum(case((Interaction.resolved.is_(False), 1), else_=0))
+            resolved_cnt = func.sum(case((Interaction.resolved.is_(True), 1), else_=0))
+            degraded_cnt = func.sum(case((Interaction.degraded.is_(True), 1), else_=0))
+            
             q = (
-                select(Interaction.intent, func.count(), func.avg(Interaction.latency_ms), unresolved)
+                select(
+                    Interaction.intent,
+                    func.count().label("requests"),
+                    resolved_cnt.label("resolved_count"),
+                    degraded_cnt.label("degraded_count"),
+                    func.avg(Interaction.latency_ms).label("avg_latency"),
+                )
                 .group_by(Interaction.intent)
                 .order_by(func.count().desc())
             )
             rows = db.exec(q).all()
+
         return [
-            {"intent": i, "requests": n, "avg_latency_ms": round(avg or 0, 1), "unresolved": int(u or 0)}
-            for i, n, avg, u in rows
+            {
+                "intent": row[0],
+                "requests": row[1],
+                "resolved_count": int(row[2] or 0),
+                "degraded_count": int(row[3] or 0),
+                "avg_latency_ms": round(row[4] or 0.0, 1),
+            }
+            for row in rows
         ]
