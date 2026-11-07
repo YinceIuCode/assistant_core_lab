@@ -13,7 +13,7 @@ def utcnow() -> datetime:
 
 class ChatSession(SQLModel, table=True):
     __tablename__ = "chat_session"
-    id: str = Field(primary_key=True, max_length=16)  # salted hash, never the raw id
+    id: str = Field(primary_key=True, max_length=16)
     channel: str = Field(default="web", max_length=16)
     created_at: datetime = Field(default_factory=utcnow)
     interactions: list["Interaction"] = Relationship(back_populates="session")
@@ -24,8 +24,8 @@ class Interaction(SQLModel, table=True):
     request_id: str = Field(index=True, unique=True, max_length=32)
     session_id: str = Field(foreign_key="chat_session.id", index=True)
     intent: str = Field(index=True, max_length=16)
-    topic: str | None = Field(default=None, max_length=32)  # e.g. handbook rule id
-    resolved: bool = True  # False = unknown / refused / error
+    topic: str | None = Field(default=None, max_length=32)
+    resolved: bool = True
     degraded: bool = False
     latency_ms: float = 0.0
     created_at: datetime = Field(default_factory=utcnow, index=True)
@@ -36,13 +36,13 @@ class Interaction(SQLModel, table=True):
 class Feedback(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     request_id: str = Field(foreign_key="interaction.request_id", index=True)
-    rating: int  # -1, 0, 1 (validated at the API)
+    rating: int
     comment: str | None = Field(default=None, max_length=500)
     created_at: datetime = Field(default_factory=utcnow)
     interaction: Optional["Interaction"] = Relationship(back_populates="feedback")
 
 
-def make_engine(url: str):  # noqa: ANN201
+def make_engine(url: str):
     if url in ("sqlite://", "sqlite:///:memory:"):
         return create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
     connect_args = {"check_same_thread": False} if url.startswith("sqlite") else {}
@@ -58,8 +58,6 @@ def hash_session(raw: str, salt: str) -> str:
 
 
 class Repository:
-    """All database access goes through here — the API never writes SQL."""
-
     def __init__(self, engine, salt: str):
         self.engine, self.salt = engine, salt
 
@@ -74,7 +72,7 @@ class Repository:
         latency_ms: float,
     ) -> None:
         sid = hash_session(raw_session, self.salt)
-        with Session(self.engine) as db:  # one transaction
+        with Session(self.engine) as db:
             if db.get(ChatSession, sid) is None:
                 db.add(ChatSession(id=sid))
             db.add(
@@ -94,7 +92,7 @@ class Repository:
         with Session(self.engine) as db:
             exists = db.exec(select(Interaction).where(Interaction.request_id == request_id)).first()
             if exists is None:
-                return None  # the API turns this into 404
+                return None
             # TODO R1 (4 lines) — follow record_interaction above:
             #   fb = Feedback(request_id=request_id, rating=rating, comment=comment)
             #   db.add(fb); db.commit(); db.refresh(fb)   # refresh loads the new id from the database
@@ -102,14 +100,13 @@ class Repository:
             raise NotImplementedError("R1")
 
     def list_feedback(self, limit: int = 100) -> list[Feedback]:
-        with Session(self.engine) as db:
+        with Session(self.engine) as db: # noqa: F841
             # TODO R2 (1 line): newest first, at most `limit` rows. SQL would be:
             #   SELECT * FROM feedback ORDER BY created_at DESC LIMIT ?
             # In SQLModel: select(Feedback).order_by(Feedback.created_at.desc()).limit(limit)
             raise NotImplementedError("R2")
 
     def intent_stats(self) -> list[dict]:
-        """Requests, average latency and unresolved rate per intent."""
         with Session(self.engine) as db:
             unresolved = func.sum(case((Interaction.resolved.is_(False), 1), else_=0))
             q = (
