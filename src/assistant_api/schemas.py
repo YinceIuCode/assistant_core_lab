@@ -33,6 +33,14 @@ class FeedbackOut(FeedbackIn):
     created_at: datetime
 
 
+class IntentStat(BaseModel):
+    intent: str
+    requests: int
+    resolved_count: int
+    degraded_count: int
+    avg_latency_ms: float
+
+
 class Weather(BaseModel):
     temperature_c: float
     wind_kmh: float
