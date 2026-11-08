@@ -42,5 +42,4 @@ def transcript(con: sqlite3.Connection, student_id: int) -> list[tuple[str, int,
         where enrollments.student_id = ?
         order by title asc
     """, (student_id, )).fetchall()
-    print(cur)
     return cur

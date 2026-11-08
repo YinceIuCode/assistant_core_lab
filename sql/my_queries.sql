@@ -1,63 +1,33 @@
-drop table if exists f1;
-create table if not exists f1(
-    id integer primary key autoincrement not null,
-    intent text not null,
-    requests integer not null
-);
+-- Lab 5 Part F: Analytical queries for the assistant database
 
-insert into f1 (intent, requests)
-select interaction.intent, count(interaction.intent)
-from interaction
-group by intent;
+-- F1: Requests per intent
+SELECT intent, COUNT(*) AS requests
+FROM interaction
+GROUP BY intent
+ORDER BY requests DESC;
 
+-- F2: Average latency per intent (rounded to 1 decimal)
+SELECT intent, ROUND(AVG(latency_ms), 1) AS avg_latency_ms
+FROM interaction
+GROUP BY intent
+ORDER BY avg_latency_ms DESC;
 
-drop table if exists f2;
-create table if not exists f2(
-    id integer primary key autoincrement not null,
-    intent text not null,
-    latency_ms float not null
-);
+-- F3: Topics with the most thumbs-down (negative feedback: rating = -1)
+SELECT i.topic, COUNT(*) AS thumbs_down
+FROM feedback f
+JOIN interaction i ON f.request_id = i.request_id
+WHERE f.rating = -1 AND i.topic IS NOT NULL
+GROUP BY i.topic
+ORDER BY thumbs_down DESC;
 
-insert into f2 (intent, latency_ms)
-select interaction.intent, round(avg(interaction.latency_ms), 2)
-from interaction
-group by intent;
-
-
-drop table if exists f3;
-create table if not exists f3(
-    id integer primary key autoincrement not null,
-    topic text not null,
-    thumbs_down float not null
-);
-
-insert into f3 (topic, thumbs_down)
-select topic, count(rating) 
-from interaction
-inner join feedback
-    on interaction.request_id = feedback.request_id
-where topic is not null
-group by topic;
-
-
-drop table if exists h2;
-create table if not exists h2(
-    id integer primary key autoincrement not null,
-    intent text not null,
-    worst_latency float,
-    best_latency float,
-    total_requests integer,
-    resolve_pct float,
-    degraded_pct float
-);
-
--- Analytic question: What are the status across all intent and percentage of degraded and resolved of each intent? ---
-insert into h2 (intent, worst_latency, best_latency, total_requests, resolve_pct, degraded_pct)
-select intent, 
-       max(latency_ms), 
-       min(latency_ms), 
-       count(id), 
-       round((sum(case when resolved then 1 else 0 end) * 100.0) / count(id), 2), 
-       round((sum(case when degraded then 1 else 0 end) * 100.0) / count(id), 2)
-from interaction
-group by intent;
+-- Homework H2: Status and percentage of degraded and resolved per intent
+-- Analytic question: What are the status across all intent and percentage of degraded and resolved of each intent?
+SELECT intent,
+       MAX(latency_ms) AS worst_latency,
+       MIN(latency_ms) AS best_latency,
+       COUNT(id) AS total_requests,
+       ROUND((SUM(CASE WHEN resolved THEN 1 ELSE 0 END) * 100.0) / COUNT(id), 2) AS resolve_pct,
+       ROUND((SUM(CASE WHEN degraded THEN 1 ELSE 0 END) * 100.0) / COUNT(id), 2) AS degraded_pct
+FROM interaction
+GROUP BY intent
+ORDER BY total_requests DESC;

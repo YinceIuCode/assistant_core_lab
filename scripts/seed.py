@@ -2,7 +2,7 @@ import random
 import sys
 import uuid
 
-from src.assistant_api.db import Repository, init_db, make_engine
+from assistant_api.db import Repository, init_db, make_engine
 
 db_path = sys.argv[1] if len(sys.argv) > 1 else "assistant.db"
 n = int(sys.argv[2]) if len(sys.argv) > 2 else 300
