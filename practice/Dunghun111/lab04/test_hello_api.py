@@ -1,7 +1,7 @@
 """Run: pytest -q test_hello_api.py   — all green means P1–P5 are done."""
 from fastapi.testclient import TestClient
 
-from hello_api import app
+from practice.Dunghun111.lab04.hello_api import app
 
 client = TestClient(app)
 
