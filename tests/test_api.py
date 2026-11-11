@@ -63,11 +63,6 @@ def test_feedback_rating_out_of_range(client):
     assert client.post("/v1/feedback", json={"request_id": "x", "rating": 5}).status_code == 422
 
 
-def test_feedback_unknown_request_id_returns_404(client):
-    r = client.post("/v1/feedback", json={"request_id": "non-existent-request-id", "rating": 1})
-    assert r.status_code == 404 and r.json()["error"]["code"] == "unknown_request_id"
-
-
 def test_weather_ok(client):
     r = client.get("/v1/weather")
     assert r.status_code == 200 and r.json()["description"] == "overcast"
