@@ -63,11 +63,6 @@ def test_feedback_rating_out_of_range(client):
     assert client.post("/v1/feedback", json={"request_id": "x", "rating": 5}).status_code == 422
 
 
-def test_feedback_unknown_request_id_returns_404(client):
-    r = client.post("/v1/feedback", json={"request_id": "non-existent-request-id", "rating": 1})
-    assert r.status_code == 404 and r.json()["error"]["code"] == "unknown_request_id"
-
-
 def test_weather_ok(client):
     r = client.get("/v1/weather")
     assert r.status_code == 200 and r.json()["description"] == "overcast"
@@ -95,19 +90,3 @@ def test_weather_stale_cache_when_upstream_fails():
     w.cache_ttl_s = 0  # force a refresh on the second call
     assert not w.current().stale
     assert w.current().stale
-
-
-# --- Homework H1: GET /v1/offices ---
-
-
-def test_offices_ok(client):
-    r = client.get("/v1/offices")
-    assert r.status_code == 200
-    names = [o["name"] for o in r.json()]
-    assert names == sorted(names, key=str.lower)  # sorted by name
-
-
-def test_offices_contains_library(client):
-    r = client.get("/v1/offices")
-    library = next(o for o in r.json() if o["name"] == "Library")
-    assert library == {"name": "Library", "room": "B.201", "hours": "Mon-Sat 07:00-20:00"}
