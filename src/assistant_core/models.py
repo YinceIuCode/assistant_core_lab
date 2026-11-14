@@ -1,3 +1,7 @@
+"""Typed request/response models — the service's public contract."""
+
+from __future__ import annotations
+
 from enum import Enum
 
 from pydantic import BaseModel, Field
@@ -10,16 +14,22 @@ class Intent(str, Enum):
     RULE = "rule"
     UNKNOWN = "unknown"
 
+
 class Message(BaseModel):
     text: str = Field(min_length=1, max_length=2000)
     session_id: str = "local"
+
 
 class Source(BaseModel):
     id: str
     title: str
 
+
 class Response(BaseModel):
     answer: str
     intent: Intent
     sources: list[Source] = []
-    degraded: bool = False
+    degraded: bool = False  # True when a fallback path was used
+    escalate: bool = False  # True when the assistant abstained and suggests a human
+    path: str = "deterministic"  # deterministic | retrieval | llm | tool | abstain
+    confidence: float | None = None

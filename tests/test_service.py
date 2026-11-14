@@ -1,31 +1,30 @@
-from unittest.mock import MagicMock
+import pytest
+from pydantic import ValidationError
 
-from assistant_core.errors import ProviderError
-from assistant_core.models import Message
-from assistant_core.service import AssistantService
-
-
-class StubLLMResponder:
-    def explain(self, question: str, rule: object) -> str:
-        raise ProviderError("LLM responder failed")
+from assistant_core.models import Intent, Message
+from assistant_core.responder import StubLLMResponder
 
 
-def test_service_fallback_on_provider_error():
-    settings = MagicMock()
-    offices = MagicMock()
-    offices.names = set()  # Tránh lỗi vòng lặp ở router
-    
-    handbook = MagicMock()
-    # Tạo một rule giả có chứa chuỗi thật để vượt qua ải Pydantic
-    mock_rule = MagicMock()
-    mock_rule.id = "rule_1"
-    mock_rule.title = "Dummy Rule"
-    handbook.search.return_value = mock_rule
+def test_fee_answer(service):
+    r = service.handle(Message(text="tuition for 18 credits and 2 retake"))
+    assert r.intent is Intent.FEE and "9,450,000" in r.answer
 
-    service = AssistantService(settings, offices, handbook)
-    service.responder = StubLLMResponder()
 
-    msg = Message(text="test query")
-    response = service.handle(msg)
+def test_rule_has_source(service):
+    r = service.handle(Message(text="can I register my thesis with 118 credits"))
+    assert r.intent is Intent.RULE and r.sources[0].id == "H26-5.3"
 
-    assert response.degraded is True
+
+def test_fallback_when_provider_fails(service):
+    service.responder = StubLLMResponder(fail=True)
+    r = service.handle(Message(text="thesis registration credits"))
+    assert r.degraded and r.sources
+
+
+def test_unknown(service):
+    assert service.handle(Message(text="what is the weather")).intent is Intent.UNKNOWN
+
+
+def test_empty_message_rejected():
+    with pytest.raises(ValidationError):
+        Message(text="")
