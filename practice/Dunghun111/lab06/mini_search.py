@@ -15,8 +15,11 @@ STOP = {"a", "an", "the", "at", "of", "for", "to", "in", "can", "be", "is", "my"
 
 def tokenize(text: str) -> list[str]:
     """'Lost my card!' -> ['lost', 'card']  (lower-case words, stop words removed) — given."""
-    return [w for w in re.findall(r"\w+", text.lower()) if w not in STOP]
-
+    temp = [w for w in re.findall(r"\w+", text.lower()) if w not in STOP]
+    for i in temp:
+        i = i[:-1] if i[-1] == "s" else i
+        
+    return temp
 
 def build_index(docs: dict[str, str]) -> dict[str, set[str]]:
     """Inverted index: word -> set of document ids that contain it.
@@ -26,6 +29,11 @@ def build_index(docs: dict[str, str]) -> dict[str, set[str]]:
     index: dict[str, set[str]] = {}
     # TODO S1: for each (doc_id, text) in docs.items(), for each word in tokenize(text):
     #          index.setdefault(word, set()).add(doc_id)
+
+    for (doc_id, text) in docs.items():
+            for word in tokenize(text):
+                index.setdefault(word, set()).add(doc_id)
+
     return index
 
 
@@ -34,5 +42,15 @@ def search(index: dict[str, set[str]], query: str, k: int = 2) -> list[tuple[str
     highest score first; ties broken by doc_id. Documents with score 0 are not returned."""
     scores: dict[str, int] = {}
     # TODO S2: for each word in tokenize(query): for each doc_id in index.get(word, set()): scores[doc_id] += 1
+    
+    for word in tokenize(query):
+        for doc_id in index.get(word, set()): 
+            if scores.get(doc_id) == None:
+                scores[doc_id] = 0
+                
+            scores[doc_id] += 1
+
     # TODO S3: sort by (-score, doc_id) and return the first k
-    return []
+    scores = {k : v for (k, v) in sorted(scores.items(), key=lambda x : x[1], reverse=True)}
+    scores = {k : v for (k, v) in sorted(scores.items(), key=lambda x : x[0])}
+    return list(scores.items())[:k]
