@@ -34,7 +34,9 @@ def search(index: dict[str, set[str]], query: str, k: int = 2) -> list[tuple[str
     """Score = number of query words found in the document. Return the top k (doc_id, score),
     highest score first; ties broken by doc_id. Documents with score 0 are not returned."""
     scores: dict[str, int] = {}
+    scores: dict[str, int] = {}
     for word in tokenize(query):
         for doc_id in index.get(word, set()):
             scores[doc_id] = scores.get(doc_id, 0) + 1
     return sorted(scores.items(), key=lambda kv: (-kv[1], kv[0]))[:k]
+
