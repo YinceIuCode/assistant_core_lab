@@ -118,3 +118,20 @@ jobs:
           if [ $is_fail -eq 1 ]; then
             exit 1
           fi
+          
+  rag-testing:
+    name: RAG AI Services Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install Packages
+        run: |
+          pip install pytest
+          pip install -e .
+      - name: Test RAG Pipeline
+        run: |
+          pytest -v ./tests/test_rag.py

@@ -14,6 +14,9 @@ Backend service for the CSC10014 Smart Virtual Assistant, combining core busines
 - `docs/` — Architecture documentation, design worksheets (`docs/lab5/data_model.md`), and verification screenshots.
 - `tests/` — Automated test suites using `pytest` (core, API, and database repository tests).
 - `api-tests/` — Manual verification scripts (`curl_tests.sh`) and Postman collection.
+- `data/kb/` — Knowledge base markdown documents for university rules, fees, and campus services.
+- `src/assistant_core/rag/` — RAG pipeline (Lab 6): chunking, Okapi BM25/TF-IDF/Hybrid indexing, and answer generation.
+- `eval/` — Evaluation benchmark cases (`cases.jsonl`) and latency/grounding path comparison (`compare_paths.py`).
 
 ---
 
