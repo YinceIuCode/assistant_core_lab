@@ -20,6 +20,9 @@ class ChatResponse(BaseModel):
     sources: list[Source] = []
     degraded: bool = False
     request_id: str
+    path: str = "deterministic"  # values: deterministic, retrieval, llm, tool, abstain
+    escalate: bool = False       # True when assistant cannot resolve safely
+    confidence: float | None = None  # model or retrieval confidence score
 
 
 class FeedbackIn(BaseModel):
