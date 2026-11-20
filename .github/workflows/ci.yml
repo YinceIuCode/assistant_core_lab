@@ -135,3 +135,21 @@ jobs:
       - name: Test RAG Pipeline
         run: |
           pytest -v ./tests/test_rag.py
+
+  ui-testing:
+    name: UI Logic & Client Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install Packages
+        run: |
+          pip install pytest
+          pip install -e .
+      - name: Test UI Logic & Client
+        run: |
+          pytest -v ./tests/test_ui.py -k "ask or feedback or validate"
+
