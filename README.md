@@ -17,6 +17,7 @@ Backend service for the CSC10014 Smart Virtual Assistant, combining core busines
 - `data/kb/` — Knowledge base markdown documents for university rules, fees, and campus services.
 - `src/assistant_core/rag/` — RAG pipeline (Lab 6): chunking, Okapi BM25/TF-IDF/Hybrid indexing, and answer generation.
 - `eval/` — Evaluation benchmark cases (`cases.jsonl`) and latency/grounding path comparison (`compare_paths.py`).
+- `ui/` — Streamlit web user interface (Lab 7): interactive chat UI (`app.py`), API client (`api_client.py`), and helper logic (`logic.py`).
 
 ---
 
@@ -166,3 +167,22 @@ pytest -q tests/test_api.py    # REST API endpoint tests
   ```bash
   pytest -q practice/<github-username>/lab05/test_school_repo.py
   ```
+
+
+---
+
+## 🌐 Running the Full-Stack MVP (Dual-Server Setup)
+
+Lab 07 introduces a Streamlit web frontend communicating with the FastAPI backend service. To run the full-stack system:
+
+### 1. Terminal 1 — Start the Backend API (port 8000)
+```powershell
+uvicorn assistant_api.main:create_app --factory
+```
+*The API is available at `http://127.0.0.1:8000` (Swagger interactive docs at `http://127.0.0.1:8000/docs`).*
+
+### 2. Terminal 2 — Start the Streamlit Web UI (port 8501)
+```powershell
+streamlit run ui/app.py
+```
+*The Web UI automatically opens in your browser at `http://localhost:8501`.*
