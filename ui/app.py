@@ -2,6 +2,7 @@
 
 The UI never imports assistant_core: it only talks to the backend through the HTTP API.
 """
+
 import os
 import sys
 import time
@@ -10,7 +11,7 @@ from pathlib import Path
 
 import streamlit as st
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))   # so "import ui..." works under streamlit
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # so "import ui..." works under streamlit
 
 from ui.api_client import AssistantClient
 from ui.logic import EXAMPLES, WELCOME, format_sources, status_note, validate_input
@@ -55,7 +56,8 @@ if not client.healthy():
     st.error("The assistant backend is not reachable. Start it with: uvicorn assistant_api.main:create_app --factory")
 
 with st.sidebar:
-    st.subheader("Try an example")
+    st.subheader("Quick-send examples")
+    st.caption("Clicking an example sends it immediately.")
     for ex in EXAMPLES:
         if st.button(ex, use_container_width=True):
             st.session_state.pending = ex
@@ -102,14 +104,16 @@ if question:
                 note = status_note(result)
                 if note:
                     st.info(note)
-            st.session_state.messages.append({
-                "role": "assistant",
-                "content": streamed_text,
-                "raw_sources": result.sources,
-                "sources": format_sources(result.sources),
-                "note": note,
-                "request_id": result.request_id,
-            }) # type: ignore
+            st.session_state.messages.append(
+                {
+                    "role": "assistant",
+                    "content": streamed_text,
+                    "raw_sources": result.sources,
+                    "sources": format_sources(result.sources),
+                    "note": note,
+                    "request_id": result.request_id,
+                }
+            )  # type: ignore
         else:
             st.session_state.messages.append({"role": "assistant", "content": f"⚠️ {result.error}"})
             st.rerun()
