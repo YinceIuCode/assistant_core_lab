@@ -4,6 +4,7 @@ The UI never imports assistant_core: it only talks to the backend through the HT
 """
 import os
 import sys
+import time
 import uuid
 from pathlib import Path
 
@@ -16,6 +17,30 @@ from ui.logic import EXAMPLES, WELCOME, format_sources, status_note, validate_in
 
 st.set_page_config(page_title="FIT Study Assistant", page_icon="🎓")
 client = AssistantClient(os.getenv("ASSISTANT_API_URL", "http://127.0.0.1:8000"))
+
+
+# ---- Bonus: word-by-word streaming generator --------------------------------
+def stream_response(text: str):
+    """Yield each word with a short pause to create a typewriter effect."""
+    for word in text.split(" "):
+        yield word + " "
+        time.sleep(0.02)
+
+
+# ---- Bonus: render collapsible sources block --------------------------------
+def render_sources(sources: list[dict] | str) -> None:
+    """Display source documents as collapsible badges inside an expander."""
+    if not sources:
+        return
+    with st.expander("📚 View verified sources"):
+        if isinstance(sources, list):
+            for s in sources:
+                badge = f"`{s['id']}`"
+                title = s.get("title", "")
+                st.markdown(f"{badge} &nbsp; **{title}**" if title else badge, unsafe_allow_html=True)
+        else:
+            st.markdown(sources)
+
 
 # ---- session state: remembered between reruns of this script ----------------
 if "session_id" not in st.session_state:
@@ -40,7 +65,10 @@ with st.sidebar:
 for i, m in enumerate(st.session_state.messages):
     with st.chat_message(m["role"]):
         st.markdown(m["content"])
-        if m.get("sources"):
+        # Bonus: show collapsible sources expander for historical messages
+        if m.get("raw_sources"):
+            render_sources(m["raw_sources"])
+        elif m.get("sources"):
             st.caption(m["sources"])
         if m.get("note"):
             st.info(m["note"])
@@ -67,9 +95,21 @@ if question:
         with st.spinner("Thinking…"):
             result = client.ask(question, st.session_state.session_id)
         if result.ok:
-            st.session_state.messages.append({"role": "assistant", "content": result.answer,
-                                              "sources": format_sources(result.sources),
-                                              "note": status_note(result), "request_id": result.request_id})
+            # Bonus: stream the response word-by-word then store in history
+            with st.chat_message("assistant"):
+                streamed_text = st.write_stream(stream_response(result.answer))
+                render_sources(result.sources)
+                note = status_note(result)
+                if note:
+                    st.info(note)
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": streamed_text,
+                "raw_sources": result.sources,
+                "sources": format_sources(result.sources),
+                "note": note,
+                "request_id": result.request_id,
+            }) # type: ignore
         else:
             st.session_state.messages.append({"role": "assistant", "content": f"⚠️ {result.error}"})
-        st.rerun()
+            st.rerun()
