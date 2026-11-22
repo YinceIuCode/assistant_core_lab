@@ -14,4 +14,4 @@ Rule: do not help or explain. Watch and write down what happens.
 The one change we made (commit link):
 Before / after screenshot:
 
-[](img/1.png)
+![UI Interaction Screenshot](img/1.png)
