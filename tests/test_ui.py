@@ -1,4 +1,5 @@
 import httpx
+import pytest
 
 from ui.api_client import AssistantClient, ChatResult
 from ui.logic import format_sources, status_note, validate_input
@@ -46,3 +47,13 @@ def test_format_sources():
 def test_status_note():
     assert "Training Office" in status_note(ChatResult(ok=True, escalate=True))
     assert status_note(ChatResult(ok=True)) is None
+
+def test_ask_rate_limit_429():
+    assert client_with(lambda req: httpx.Response(429, json={})).ask("abc123", "whatever").error == "Too many questions in a short time. Please wait a minute."
+    
+def test_ask_timeout():
+    def timeout_boom(req):
+        raise httpx.ReadTimeout("timed out", request=req)
+    
+    r = client_with(timeout_boom).ask("abc123", "whatever")
+    assert not r.ok and "The assistant is taking too long. Please try again." in r.error
