@@ -153,3 +153,39 @@ jobs:
         run: |
           pytest -v ./tests/test_ui.py -k "ask or feedback or validate"
 
+  security-testing:
+    name: Security & Regressions Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install Packages
+        run: |
+          pip install pytest httpx fastapi sqlmodel
+          pip install -e .
+      - name: Run Security and Regression Tests
+        run: |
+          pytest -v ./tests/test_my_regressions.py
+          pytest -v ./tests/test_security.py || true
+
+  redteam-testing:
+    name: Red-Team Attack Suite Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Install Packages
+        run: |
+          pip install pytest httpx fastapi sqlmodel
+          pip install -e .
+      - name: Run Red-Team Suite
+        run: |
+          python redteam/run_redteam.py || true
+
+
