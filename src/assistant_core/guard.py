@@ -24,7 +24,7 @@ PRIVATE_REPLY = "I can't share information about other students. You can only se
 INJECTION_PATTERNS = [
     r"\bignore (all |any |the )?(previous|above|prior|earlier) (instructions|rules|messages)",
     r"\b(reveal|show|print|repeat) (me )?(your|the) (system )?(prompt|instructions|rules)",
-    r"\byou are( now)?\b",
+    r"\byou are now?\b",
     r"\b(developer|debug|admin|god) mode\b",
     r"\bpretend (to be|you are)\b",
 ]
